@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA Beauty | AI-Powered Luxury Cosmetics & Shade Matcher</title>
+  
+  <!-- Meta Tags for SEO -->
+  <meta name="description" content="Discover AURA Beauty's AI-Powered cosmetic catalog. Get personalized product matches via Cosine Similarity, scan your skin tone using Computer Vision, and find your perfect shade using Decision Trees.">
+  <meta name="keywords" content="makeup, cosmetics, AI recommender, computer vision skin tone, shade matcher, decision tree, cosine similarity">
+  <meta name="author" content="ANDE LAKSHMI SRI GOWRI">
+
+  <!-- Style Sheets -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- MediaPipe Face Mesh Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Header Section -->
+  <header id="main-header">
+    <div class="container nav-container">
+      <a href="#" class="logo">AURA<span>.</span>AI</a>
+      <nav id="navbar">
+        <ul>
+          <li><a href="#" class="nav-tab active" data-tab="catalog">Shop Catalog</a></li>
+          <li><a href="#" class="nav-tab" data-tab="recommender">AI Recommender</a></li>
+          <li><a href="#" class="nav-tab" data-tab="scanner">Skin Scanner</a></li>
+          <li><a href="#" class="nav-tab" data-tab="matcher">Shade Matcher</a></li>
+          <li><a href="#" class="nav-tab" data-tab="tryon">AI Try-On</a></li>
+          <li><a href="#about-section">About Us</a></li>
+          <li><a href="#contact-section">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light theme" title="Switch Theme">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+        <button id="cart-trigger" class="cart-trigger" aria-label="Open shopping cart" title="View Bag">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span id="cart-count" class="cart-count" style="display: none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero-section">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <span class="hero-subtitle">Make-up for You | AI Cosmetics Laboratory</span>
+      <h1>Experience <b>Precision Beauty</b></h1>
+      <p class="hero-description">
+        Welcome to the intersection of luxury cosmetics and computer science. Switch tabs below to explore our dynamic catalog, get matching scores via Cosine Similarity, try our live Selfie Skin Detector, or run our Decision Tree Shade Matcher.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Multi-Tab Dashboard Container -->
+  <main class="container">
+    
+    <!-- ==================== TAB 1: SHOP CATALOG ==================== -->
+    <section id="catalog-tab" class="tab-content active">
+      <div class="section-title">
+        <h2>Product <span>Catalog</span></h2>
+      </div>
+
+      <!-- Filter and Sort Toolbar -->
+      <div class="toolbar">
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="Search by product name, category..." aria-label="Search catalog">
+        </div>
+        
+        <div class="filter-actions">
+          <div class="category-filters" id="category-filters">
+            <button class="filter-btn active" data-category="all">All</button>
+            <button class="filter-btn" data-category="primers">Primers</button>
+            <button class="filter-btn" data-category="foundations">Foundations</button>
+            <button class="filter-btn" data-category="setting powders">Powders</button>
+            <button class="filter-btn" data-category="blushes">Blushes</button>
+            <button class="filter-btn" data-category="eye shadow palettes">Eyeshadows</button>
+            <button class="filter-btn" data-category="highlighters">Highlighters</button>
+          </div>
+          
+          <div class="sort-select">
+            <select id="sort-select" aria-label="Sort products">
+              <option value="default">Sort by: Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="discount-high">Discount: High to Low</option>
+              <option value="rating">Rating: Highest First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catalog Product Grid -->
+      <div class="products-grid" id="products-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: AI RECOMMENDER ==================== -->
+    <section id="recommender-tab" class="tab-content">
+      <div class="section-title">
+        <h2>Personalized <span>Recommender</span></h2>
+        <p class="subtitle-text">Uses Content-Based Filtering & Cosine Similarity vector mathematics to rank products according to your preferences.</p>
+      </div>
+
+      <div class="ai-container">
+        <!-- Input Form Side -->
+        <div class="ai-form-card">
+          <div class="card-header-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <h3>Setup Your Preferences</h3>
+          </div>
+          <form id="recommender-form" class="ai-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="rec-skin-type">Skin Type</label>
+                <select id="rec-skin-type" required>
+                  <option value="dry">Dry</option>
+                  <option value="oily">Oily</option>
+                  <option value="combination">Combination</option>
+                  <option value="sensitive">Sensitive</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="rec-finish">Preferred Finish</label>
+                <select id="rec-finish" required>
+                  <option value="matte">Matte</option>
+                  <option value="dewy">Dewy</option>
+                  <option value="natural">Natural</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="rec-budget">Maximum Budget</label>
+                <select id="rec-budget" required>
+                  <option value="1000">Under ₹1,000</option>
+                  <option value="3000">₹1,000 - ₹3,000</option>
+                  <option value="7000">Above ₹3,000</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="rec-brand">Brand Preference</label>
+                <select id="rec-brand" required>
+                  <option value="any">Any Brand</option>
+                  <option value="aura">AURA</option>
+                  <option value="maybelline">Maybelline</option>
+                  <option value="loreal">L'Oreal</option>
+                  <option value="mac">MAC</option>
+                  <option value="sephora">Sephora</option>
+                  <option value="clinique">Clinique</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="width: 100%;">
+                <label for="rec-prioritize">Prioritize Matches By</label>
+                <select id="rec-prioritize" required>
+                  <option value="type-finish">Skin Suitability & Finish</option>
+                  <option value="rating">Customer Ratings First</option>
+                  <option value="discount">Highest Discount Savings</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary form-submit-btn">
+              Generate Recommendations <i class="fa-solid fa-calculator"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Output Result Side -->
+        <div class="ai-results-card">
+          <div class="results-header">
+            <h3>Top 5 Matching Products</h3>
+            <span class="algorithm-badge">Cosine Similarity (Sci-kit concept)</span>
+          </div>
+          <div class="recommendations-list" id="recommendations-list">
+            <div class="empty-results-message">
+              <i class="fa-solid fa-sliders"></i>
+              <p>Configure your preferences and click "Generate" to calculate cosine distances.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: SKIN DETECTOR (CV) ==================== -->
+    <section id="scanner-tab" class="tab-content">
+      <div class="section-title">
+        <h2>CV Skin Tone <span>Detector</span></h2>
+        <p class="subtitle-text">Uses Computer Vision pixel clustering heuristics inside HTML5 Canvas to scan your skin tone and detect warm, cool, or neutral undertones.</p>
+      </div>
+
+      <div class="ai-container">
+        <!-- Photo Scanner Upload Side -->
+        <div class="ai-form-card">
+          <div class="card-header-icon">
+            <i class="fa-solid fa-camera"></i>
+            <h3>Selfie Color Analyzer</h3>
+          </div>
+          <p class="card-description-text">Upload a clear photo of your face or select a demo model photo to trigger RGB color clustering.</p>
+          
+          <div class="scanner-viewport-wrapper">
+            <div class="scanner-viewport">
+              <canvas id="scanner-canvas"></canvas>
+              <!-- Scanner overlay line -->
+              <div class="scanner-line" id="scanner-line"></div>
+              <div class="scanner-mesh" id="scanner-mesh"></div>
+              <div class="scanner-placeholder" id="scanner-placeholder">
+                <i class="fa-solid fa-face-smile"></i>
+                <span>Upload image to start CV Scan</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="scanner-controls">
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            <button class="btn-primary" onclick="document.getElementById('image-upload').click()">
+              Upload Photo <i class="fa-solid fa-cloud-arrow-up"></i>
+            </button>
+            <button class="filter-btn" id="demo-photo-btn">
+              Use Demo Model Photo <i class="fa-solid fa-image"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scan Output Results Side -->
+        <div class="ai-results-card">
+          <div class="results-header">
+            <h3>Computer Vision Analytics</h3>
+            <span class="algorithm-badge">Heuristic RGB Clustering</span>
+          </div>
+          
+          <div class="cv-results-body" id="cv-results-body">
+            <div class="empty-results-message">
+              <i class="fa-solid fa-qrcode"></i>
+              <p>Upload a selfie or model photo to begin scanning skin pixels.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: SHADE MATCHER ==================== -->
+    <section id="matcher-tab" class="tab-content">
+      <div class="section-title">
+        <h2>AI Shade <span>Matcher</span></h2>
+        <p class="subtitle-text">Executes a client-side Decision Tree classifier model matching skin parameters and conditions to exact product shade selections.</p>
+      </div>
+
+      <div class="ai-container">
+        <!-- Tree Form Side -->
+        <div class="ai-form-card">
+          <div class="card-header-icon">
+            <i class="fa-solid fa-diagram-project"></i>
+            <h3>Shade Classifier Input</h3>
+          </div>
+          <form id="matcher-form" class="ai-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="match-tone">Skin Tone</label>
+                <select id="match-tone" required>
+                  <option value="fair">Fair</option>
+                  <option value="medium">Medium</option>
+                  <option value="tan">Tan</option>
+                  <option value="deep">Deep</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="match-undertone">Undertone</label>
+                <select id="match-undertone" required>
+                  <option value="cool">Cool (Pink/Blue)</option>
+                  <option value="warm">Warm (Yellow/Golden)</option>
+                  <option value="neutral">Neutral (Peach/Olive)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="match-occasion">Occasion</label>
+                <select id="match-occasion" required>
+                  <option value="daily">Daily Wear (Light/Natural)</option>
+                  <option value="party">Party / Glam (Dramatic)</option>
+                  <option value="wedding">Wedding / Bridal (Rich/Long-wear)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="match-season">Current Season</label>
+                <select id="match-season" required>
+                  <option value="summer">Summer (Oil Control / Sweatproof)</option>
+                  <option value="winter">Winter (Moisturizing / Dewy)</option>
+                  <option value="spring-fall">Spring / Autumn (Balanced)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="width: 100%;">
+                <label for="match-finish">Preferred Finish</label>
+                <select id="match-finish" required>
+                  <option value="matte">Velvet Matte</option>
+                  <option value="dewy">Dewy Glow</option>
+                  <option value="natural">Natural Satin</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary form-submit-btn">
+              Run Decision Tree Matcher <i class="fa-solid fa-network-wired"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Tree Visualizer & Output Result Side -->
+        <div class="ai-results-card">
+          <div class="results-header">
+            <h3>Decision Path & Shade Output</h3>
+            <span class="algorithm-badge">Random Forest / Decision Tree</span>
+          </div>
+          
+          <div class="tree-results-body" id="tree-results-body">
+            <div class="empty-results-message">
+              <i class="fa-solid fa-network-wired"></i>
+              <p>Configure parameters and run the classifier to calculate optimal shade products.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: AI TRY-ON ==================== -->
+    <section id="tryon-tab" class="tab-content">
+      <div class="section-title">
+        <h2>Virtual Makeup <span>Try-On</span></h2>
+        <p class="subtitle-text">Uses client-side computer vision face landmark mapping to virtually overlay lipstick, foundation, eyeshadow, blush, and eyeliner.</p>
+      </div>
+
+      <div class="ai-container tryon-workspace">
+        <!-- Canvas Viewport Side -->
+        <div class="ai-form-card tryon-viewport-card">
+          <div class="card-header-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <h3>Live Interactive Mirror</h3>
+          </div>
+          
+          <div class="tryon-canvas-container">
+            <div class="tryon-canvas-split">
+              <div class="canvas-viewport-side">
+                <span class="view-label">Before</span>
+                <canvas id="tryon-before-canvas"></canvas>
+              </div>
+              <div class="canvas-viewport-side">
+                <span class="view-label">After</span>
+                <canvas id="tryon-canvas"></canvas>
+              </div>
+            </div>
+            <div id="tryon-placeholder" class="tryon-placeholder">
+              <i class="fa-regular fa-face-smile"></i>
+              <p>Upload a selfie or use our demo model to start your Virtual Try-On.</p>
+            </div>
+            <!-- Video for camera -->
+            <video id="tryon-video" style="display:none;" autoplay playsinline></video>
+          </div>
+
+          <div class="scanner-controls">
+            <input type="file" id="tryon-file-upload" accept="image/*" style="display: none;">
+            <button class="btn-primary" onclick="document.getElementById('tryon-file-upload').click()">
+              Upload Photo <i class="fa-solid fa-cloud-arrow-up"></i>
+            </button>
+            <button class="filter-btn" id="tryon-demo-btn">
+              Use Demo Model Photo <i class="fa-solid fa-image"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Try-On Controls Sidebar -->
+        <div class="ai-results-card tryon-controls-card">
+          <div class="results-header">
+            <h3>Makeup Application Controls</h3>
+            <span class="algorithm-badge">Face Landmarks Masking</span>
+          </div>
+
+          <div class="tryon-look-presets">
+            <span class="presets-label">Quick Looks:</span>
+            <div class="presets-buttons">
+              <button class="filter-btn" id="look-bridal">Bridal Glam</button>
+              <button class="filter-btn" id="look-natural">Glowy Natural</button>
+              <button class="filter-btn" id="look-reset">Reset All</button>
+            </div>
+          </div>
+
+          <div class="tryon-accordion">
+            <!-- Section 1: Foundation -->
+            <div class="tryon-section-group">
+              <div class="section-group-header">
+                <input type="checkbox" id="toggle-foundation">
+                <label for="toggle-foundation">Foundation Layer</label>
+              </div>
+              <div class="section-group-body">
+                <div class="control-row">
+                  <label for="tryon-foundation-shade">Foundation Shade</label>
+                  <select id="tryon-foundation-shade">
+                    <option value="#fcd1af">Fair Pink - 110</option>
+                    <option value="#f5c19d">Fair Golden - 120</option>
+                    <option value="#e2aa82">Medium Sand - 215</option>
+                    <option value="#d5986c">Medium Honey - 220</option>
+                    <option value="#b87a4d">Tan Amber - 330</option>
+                    <option value="#764522">Deep Mocha - 420</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label>Coverage Level</label>
+                  <input type="range" id="tryon-foundation-coverage" min="0.1" max="1.0" step="0.1" value="0.5">
+                </div>
+                <div class="control-row">
+                  <label for="tryon-foundation-finish">Finish</label>
+                  <select id="tryon-foundation-finish">
+                    <option value="dewy">Dewy Glow</option>
+                    <option value="matte">Matte Velvet</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2: Lipstick -->
+            <div class="tryon-section-group">
+              <div class="section-group-header">
+                <input type="checkbox" id="toggle-lipstick">
+                <label for="toggle-lipstick">Lipstick Layer</label>
+              </div>
+              <div class="section-group-body">
+                <div class="control-row">
+                  <label>Lipstick Shade</label>
+                  <div class="color-presets" id="lipstick-color-presets">
+                    <button type="button" class="color-dot active" data-color="#b80c09" style="background-color: #b80c09;" title="Ruby Red"></button>
+                    <button type="button" class="color-dot" data-color="#e05370" style="background-color: #e05370;" title="Soft Pink"></button>
+                    <button type="button" class="color-dot" data-color="#d6573b" style="background-color: #d6573b;" title="Coral Peach"></button>
+                    <button type="button" class="color-dot" data-color="#691a47" style="background-color: #691a47;" title="Deep Berry"></button>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label>Opacity / Blending</label>
+                  <input type="range" id="tryon-lipstick-opacity" min="0.1" max="1.0" step="0.05" value="0.7">
+                </div>
+                <div class="control-row">
+                  <label for="tryon-lipstick-finish">Finish</label>
+                  <select id="tryon-lipstick-finish">
+                    <option value="matte">Matte</option>
+                    <option value="glossy">Glossy</option>
+                    <option value="satin">Satin</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Eyeshadow -->
+            <div class="tryon-section-group">
+              <div class="section-group-header">
+                <input type="checkbox" id="toggle-eyeshadow">
+                <label for="toggle-eyeshadow">Eyeshadow Layer</label>
+              </div>
+              <div class="section-group-body">
+                <div class="control-row">
+                  <label>Eyeshadow Color</label>
+                  <div class="color-presets" id="eyeshadow-color-presets">
+                    <button type="button" class="color-dot active" data-color="#9a6e60" style="background-color: #9a6e60;" title="Nude Taupe"></button>
+                    <button type="button" class="color-dot" data-color="#e28c9a" style="background-color: #e28c9a;" title="Rose Gold"></button>
+                    <button type="button" class="color-dot" data-color="#a45885" style="background-color: #a45885;" title="Velvet Orchid"></button>
+                    <button type="button" class="color-dot" data-color="#c69f69" style="background-color: #c69f69;" title="Champagne Glitter"></button>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label>Opacity</label>
+                  <input type="range" id="tryon-eyeshadow-opacity" min="0.1" max="1.0" step="0.1" value="0.5">
+                </div>
+                <div class="control-row">
+                  <label for="tryon-eyeshadow-effect">Style Effect</label>
+                  <select id="tryon-eyeshadow-effect">
+                    <option value="gradient">Gradient Blend</option>
+                    <option value="glitter">Glitter Sparkle</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4: Blush -->
+            <div class="tryon-section-group">
+              <div class="section-group-header">
+                <input type="checkbox" id="toggle-blush">
+                <label for="toggle-blush">Blush Layer</label>
+              </div>
+              <div class="section-group-body">
+                <div class="control-row">
+                  <label>Blush Shade</label>
+                  <div class="color-presets" id="blush-color-presets">
+                    <button type="button" class="color-dot active" data-color="#f0968f" style="background-color: #f0968f;" title="Rose Pink"></button>
+                    <button type="button" class="color-dot" data-color="#f09873" style="background-color: #f09873;" title="Coral Glow"></button>
+                    <button type="button" class="color-dot" data-color="#db8269" style="background-color: #db8269;" title="Peach Shimmer"></button>
+                    <button type="button" class="color-dot" data-color="#c98a75" style="background-color: #c98a75;" title="Nude Bronze"></button>
+                  </div>
+                </div>
+                <div class="control-row">
+                  <label>Blush Intensity</label>
+                  <input type="range" id="tryon-blush-opacity" min="0.1" max="1.0" step="0.05" value="0.4">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 5: Eyeliner -->
+            <div class="tryon-section-group">
+              <div class="section-group-header">
+                <input type="checkbox" id="toggle-eyeliner">
+                <label for="toggle-eyeliner">Eyeliner Layer</label>
+              </div>
+              <div class="section-group-body">
+                <div class="control-row">
+                  <label for="tryon-eyeliner-style">Eyeliner Style</label>
+                  <select id="tryon-eyeliner-style">
+                    <option value="winged">Winged Liner</option>
+                    <option value="cat">Cat Eye</option>
+                    <option value="thin">Thin Tightline</option>
+                    <option value="bold">Bold Graphic</option>
+                  </select>
+                </div>
+                <div class="control-row">
+                  <label for="tryon-eyeliner-color">Liner Color</label>
+                  <select id="tryon-eyeliner-color">
+                    <option value="#1c1c1c">Matte Black</option>
+                    <option value="#4a3b32">Charcoal Brown</option>
+                    <option value="#dfb67b">Gilded Gold</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- About Us Section -->
+  <section class="section" id="about-section">
+    <div class="container">
+      <div class="section-title">
+        <h2>About <span>Us</span></h2>
+      </div>
+      <div class="about-wrapper">
+        <div class="about-text-side">
+          <p>
+            Welcome to AURA Beauty, your premier destination for high-end luxury cosmetic products. We curate the finest quality ingredients to ensure that you experience long-wear performance, velvety textures, and luminous finishes.
+          </p>
+          <p>
+            Our core mission is to create make-up that is both clean and incredibly high-performing. From weightless blurring primers and airbrushed setting powders to high-coverage foundations and intensely pigmented palettes, we provide cosmetic solutions for every skin tone and texture.
+          </p>
+          
+          <div class="about-features">
+            <div class="feature-card">
+              <i class="fa-solid fa-leaf"></i>
+              <h4>100% Vegan</h4>
+              <p>Cruelty-free formulations made strictly from ethical vegan ingredients.</p>
+            </div>
+            <div class="feature-card">
+              <i class="fa-solid fa-droplet"></i>
+              <h4>Clean Beauty</h4>
+              <p>Free from parabens, mineral oils, sulfates, and toxic synthetics.</p>
+            </div>
+          </div>
+        </div>
+        <div class="about-img-side">
+          <div class="about-image-wrapper">
+            <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=800&auto=format&fit=crop" alt="Premium cosmetics display" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Us Section -->
+  <section class="section" id="contact-section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Get in <span>Touch</span></h2>
+      </div>
+      <div class="contact-wrapper">
+        <!-- Info Cards -->
+        <div class="contact-info-card">
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="info-details">
+              <h4>Contact Number</h4>
+              <p>+91 93556 42516</p>
+              <p>Mon - Sat: 9:00 AM - 7:00 PM</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div class="info-details">
+              <h4>Email Queries</h4>
+              <p>support@aurabeauty.com</p>
+              <p>responses within 24 hours</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div class="info-details">
+              <h4>HQ Address</h4>
+              <p>G-Floor, Luxury Galleria Block, MG Road, Mumbai, India</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <label for="contact-name">Full Name</label>
+            <input type="text" id="contact-name" placeholder="Enter your name" required>
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email Address</label>
+            <input type="email" id="contact-email" placeholder="name@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="contact-message">Your Message</label>
+            <textarea id="contact-message" rows="5" placeholder="How can we help you?" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Send Message <i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sliding Cart Drawer Overlay -->
+  <div class="cart-backdrop" id="cart-backdrop"></div>
+  <aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping Cart">
+    <div class="cart-header">
+      <h2>Shopping Bag</h2>
+      <button class="cart-close" id="cart-close" aria-label="Close cart">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="cart-items" id="cart-items">
+      <!-- Injected dynamically via JS -->
+    </div>
+    
+    <div class="cart-footer">
+      <div class="cart-summary-row">
+        <span>Subtotal:</span>
+        <span id="cart-subtotal">₹0</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Catalog Savings:</span>
+        <span id="cart-savings" class="discount-saving">-₹0</span>
+      </div>
+      <div class="cart-summary-row total">
+        <span>Grand Total:</span>
+        <span id="cart-total">₹0</span>
+      </div>
+      <button class="btn-primary" id="checkout-btn" style="width: 100%; margin-top: 20px;">Proceed to Checkout <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </aside>
+
+  <!-- Quick View Modal Container -->
+  <div class="modal-overlay" id="quick-view-modal" role="dialog" aria-modal="true">
+    <div class="modal-container">
+      <button class="modal-close" id="modal-close" aria-label="Close modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body">
+        <div class="modal-img-side">
+          <img src="" alt="">
+        </div>
+        <div class="modal-content-side">
+          <span class="product-category"></span>
+          <h2 class="modal-title"></h2>
+          
+          <div class="modal-price-row">
+            <span class="current-price"></span>
+            <span class="original-price"></span>
+          </div>
+          
+          <p class="modal-description"></p>
+          
+          <div class="modal-specs">
+            <div class="spec-item">
+              <span class="spec-label">Brand:</span>
+              <span class="spec-value spec-brand"></span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Best Suited For:</span>
+              <span class="spec-value"></span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Finish:</span>
+              <span class="spec-value"></span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Size:</span>
+              <span class="spec-value"></span>
+            </div>
+            <div class="spec-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+              <span class="spec-label">Ingredients:</span>
+              <span class="spec-value spec-ingredients" style="font-weight: normal; font-size: 13px;"></span>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button class="btn-primary modal-add-btn">Add to Shopping Bag <i class="fa-solid fa-bag-shopping"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <div class="container footer-top">
+      <div class="footer-brand">
+        <h3>AURA<span>.</span></h3>
+        <p>Premium cosmetics and skincare catalog designed to empower and highlight your natural aura.</p>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="social-link" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-link" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+          <a href="#" class="social-link" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+      </div>
+      
+      <div class="footer-links">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#products-section">Shop Catalog</a></li>
+          <li><a href="#about-section">Our Story</a></li>
+          <li><a href="#contact-section">Get Help</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-newsletter">
+        <h4>Newsletter</h4>
+        <p>Subscribe to receive product launch announcements and discount deals.</p>
+        <form class="newsletter-form" id="newsletter-form">
+          <input type="email" placeholder="Your email address" required aria-label="Email Address for newsletter">
+          <button type="submit" aria-label="Submit subscription"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+    
+    <div class="container footer-bottom">
+      <p>&copy; 2026 AURA Beauty Product Catalog. Built by ANDE LAKSHMI SRI GOWRI.</p>
+      <div class="footer-payment-icons" aria-label="Accepted payment methods">
+        <i class="fa-brands fa-cc-visa"></i>
+        <i class="fa-brands fa-cc-mastercard"></i>
+        <i class="fa-brands fa-cc-paypal"></i>
+        <i class="fa-brands fa-cc-apple-pay"></i>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
